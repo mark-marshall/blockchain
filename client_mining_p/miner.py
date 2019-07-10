@@ -3,10 +3,6 @@ import requests
 
 import sys
 
-
-# TODO: Implement functionality to search for a proof 
-
-@staticmethod
 def valid_proof(last_proof, proof):
     """
     Validates the Proof:  Does hash(last_proof, proof) contain 4
@@ -17,8 +13,8 @@ def valid_proof(last_proof, proof):
     # hashing the guess
     guess_hash = hashlib.sha256(guess).hexdigest()
 
-    # return True if the last 4 digits of the hash ar zreos
-    return guess_hash[-4:] == "0000"
+    # return True if leading 4 digits of the hash ar zreos
+    return guess_hash[0:5] == "00000"
 
 def proof_of_work(last_proof):
     """
@@ -53,12 +49,13 @@ if __name__ == '__main__':
         # Find a new proof
         new_proof = proof_of_work(last_proof)
         # Post the proof to the server
-        proof_submission = requests.post(f"{node}/mine", {"proof": new_proof})
-        proof_res = proof_submission.json()
-        if proof_res['message'] == 'New Block Forged':
-            # Add 1 to the number of coins mined and print it
-            coins_mined += 1
-            print(f"Coins mined: {coins_mined}")
-        # Otherwise, print the failure message from the server
-        else:
-            print(proof_res)
+        print(new_proof)
+        proof_submission = requests.post(f"{node}/mine", json={"proof": new_proof})
+        print(proof_submission.text)
+        # if proof_res['message'] == 'New Block Forged':
+        #     # Add 1 to the number of coins mined and print it
+        #     coins_mined += 1
+        #     print(f"Coins mined: {coins_mined}")
+        # # Otherwise, print the failure message from the server
+        # else:
+        #     print(proof_res)

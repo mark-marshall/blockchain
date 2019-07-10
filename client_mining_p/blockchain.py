@@ -77,7 +77,7 @@ class Blockchain(object):
     @staticmethod
     def valid_proof(last_proof, proof):
         """
-        Validates the Proof:  Does hash(last_proof, proof) contain 4
+        Validates the Proof:  Does hash(last_proof, proof) contain 6
         leading zeroes?
         """
         # encode a guess
@@ -85,8 +85,8 @@ class Blockchain(object):
         # hashing the guess
         guess_hash = hashlib.sha256(guess).hexdigest()
 
-        # return True if the last 4 digits of the hash are zreos
-        return guess_hash[0:6] == "000000"
+        # return True if the leading 6 digits of the hash are zreos
+        return guess_hash[0:5] == "00000"
 
     def valid_chain(self, chain):
         """
@@ -140,10 +140,10 @@ def mine():
     else:
         last_proof = blockchain.last_block['proof']
         # check to see whether the new proof is valid
-        if blockchain.valid_proof(last_proof, proof):
+        if blockchain.valid_proof(last_proof, proof['proof']):
             # create a new transaction
             blockchain.new_transaction( sender="0", recipient=node_identifier, amount=1)
-            previous_hash = blockchain.hash(last_block)
+            previous_hash = blockchain.hash(blockchain.last_block)
             # create a new block
             block = blockchain.new_block(proof, previous_hash)
             # send a success response with the new block
@@ -156,7 +156,7 @@ def mine():
             }
             return jsonify(response), 200
         # send a failure message
-        return 'Failure', 400
+        return "Failure", 400
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
