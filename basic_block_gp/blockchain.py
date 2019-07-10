@@ -86,7 +86,7 @@ class Blockchain(object):
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         # return True if the last 4 digits of the hash ar zreos
-        return guess_hash[-4:] == "0000"
+        return guess_hash[0:6] == "000000"
 
     def valid_chain(self, chain):
         """
