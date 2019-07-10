@@ -77,7 +77,7 @@ class Blockchain(object):
     @staticmethod
     def valid_proof(last_proof, proof):
         """
-        Validates the Proof:  Does hash(last_proof, proof) contain 6
+        Validates the Proof:  Does hash(last_proof, proof) contain 5
         leading zeroes?
         """
         # encode a guess
@@ -85,7 +85,7 @@ class Blockchain(object):
         # hashing the guess
         guess_hash = hashlib.sha256(guess).hexdigest()
 
-        # return True if the leading 6 digits of the hash are zreos
+        # return True if the leading 5 digits of the hash are zreos
         return guess_hash[0:5] == "00000"
 
     def valid_chain(self, chain):

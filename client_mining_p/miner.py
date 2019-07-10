@@ -5,7 +5,7 @@ import sys
 
 def valid_proof(last_proof, proof):
     """
-    Validates the Proof:  Does hash(last_proof, proof) contain 4
+    Validates the Proof:  Does hash(last_proof, proof) contain 5
     leading zeroes?
     """
     # encode a guess
@@ -13,7 +13,7 @@ def valid_proof(last_proof, proof):
     # hashing the guess
     guess_hash = hashlib.sha256(guess).hexdigest()
 
-    # return True if leading 4 digits of the hash ar zreos
+    # return True if leading 5 digits of the hash are zreos
     return guess_hash[0:5] == "00000"
 
 def proof_of_work(last_proof):
