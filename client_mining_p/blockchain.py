@@ -156,7 +156,7 @@ def mine():
             }
             return jsonify(response), 200
         # send a failure message
-        return "Failure", 400
+        return {"failure": "Incorrect proof"}, 400
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():

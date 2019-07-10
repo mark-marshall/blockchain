@@ -49,13 +49,12 @@ if __name__ == '__main__':
         # Find a new proof
         new_proof = proof_of_work(last_proof)
         # Post the proof to the server
-        print(new_proof)
         proof_submission = requests.post(f"{node}/mine", json={"proof": new_proof})
-        print(proof_submission.text)
-        # if proof_res['message'] == 'New Block Forged':
-        #     # Add 1 to the number of coins mined and print it
-        #     coins_mined += 1
-        #     print(f"Coins mined: {coins_mined}")
-        # # Otherwise, print the failure message from the server
-        # else:
-        #     print(proof_res)
+        proof_res = proof_submission.json()
+        if proof_res['message'] == 'New Block Forged':
+            # Add 1 to the number of coins mined and print it
+            coins_mined += 1
+            print(f"Coins mined: {coins_mined}")
+        # Otherwise, print the failure message from the server
+        else:
+            print(proof_res['failure'])
