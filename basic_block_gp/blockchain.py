@@ -85,7 +85,7 @@ class Blockchain(object):
         # hashing the guess
         guess_hash = hashlib.sha256(guess).hexdigest()
 
-        # return True if the last 4 digits of the hash ar zreos
+        # return True if the last 4 digits of the hash are zreos
         return guess_hash[0:6] == "000000"
 
     def valid_chain(self, chain):
@@ -184,6 +184,12 @@ def full_chain():
     }
     return jsonify(response), 200
 
+@app.route('/last-proof', methods=['GET'])
+def last_proof():
+    response = {
+        'last_proof': blockchain.chain[-1:][0]['proof']
+    }
+    return jsonify(response), 200
 
 # Run the program on port 5000
 if __name__ == '__main__':
