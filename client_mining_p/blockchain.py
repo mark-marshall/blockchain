@@ -5,8 +5,6 @@ from uuid import uuid4
 
 from flask import Flask, jsonify, request
 
-import sys
-
 
 class Blockchain(object):
     def __init__(self):
@@ -76,29 +74,19 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def proof_of_work(self, last_proof):
-        """
-        Simple Proof of Work Algorithm
-        - Find a number p' such that hash(pp') contains 4 leading
-        zeroes, where p is the previous p'
-        - p is the previous proof, and p' is the new proof
-        """
-
-        proof = 0
-        while self.valid_proof(last_proof, proof) is False:
-            proof += 1
-
-        return proof
-
     @staticmethod
     def valid_proof(last_proof, proof):
         """
         Validates the Proof:  Does hash(last_proof, proof) contain 4
         leading zeroes?
         """
-        guess = f'{last_proof}{proof}'.encode()
+        # encode a guess
+        guess = f"{last_proof}{proof}".encode()
+        # hashing the guess
         guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
+
+        # return True if the last 4 digits of the hash are zreos
+        return guess_hash[0:6] == "000000"
 
     def valid_chain(self, chain):
         """
@@ -117,10 +105,12 @@ class Blockchain(object):
             print(f'{block}')
             print("\n-------------------\n")
             # Check that the hash of the block is correct
+            # Return false if hash isn't correct
             if block['previous_hash'] != self.hash(last_block):
                 return False
 
             # Check that the Proof of Work is correct
+            # Return false if proof isn't correct
             if not self.valid_proof(last_block['proof'], block['proof']):
                 return False
 
@@ -140,34 +130,33 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
-    # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
-    last_proof = last_block['proof']
-    proof = blockchain.proof_of_work(last_proof)
-
-    # We must receive a reward for finding the proof.
-    # The sender is "0" to signify that this node has mine a new coin
-    blockchain.new_transaction(
-        sender="0",
-        recipient=node_identifier,
-        amount=1,
-    )
-
-    # Forge the new BLock by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash)
-
-    response = {
-        'message': "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
-    }
-    return jsonify(response), 200
-
+    proof = request.get_json()
+    # Check that the required fields are in the POST'ed data
+    required = ['proof']
+    if not proof:
+        return 'No proof sent', 400
+    else:
+        last_proof = blockchain.last_block['proof']
+        # check to see whether the new proof is valid
+        if blockchain.valid_proof(last_proof, proof):
+            # create a new transaction
+            blockchain.new_transaction( sender="0", recipient=node_identifier, amount=1)
+            previous_hash = blockchain.hash(last_block)
+            # create a new block
+            block = blockchain.new_block(proof, previous_hash)
+            # send a success response with the new block
+            response = {
+                'message': "New Block Forged",
+                'index': block['index'],
+                'transactions': block['transactions'],
+                'proof': block['proof'],
+                'previous_hash': block['previous_hash'],
+            }
+            return jsonify(response), 200
+        # send a failure message
+        return 'Failure', 400
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
@@ -191,18 +180,17 @@ def new_transaction():
 def full_chain():
     response = {
         'chain': blockchain.chain,
-        'length': len(blockchain.chain),
+        'length': len(blockchain.chain)
     }
     return jsonify(response), 200
 
+@app.route('/last-proof', methods=['GET'])
+def last_proof():
+    response = {
+        'last_proof': blockchain.last_block['proof']
+    }
+    return jsonify(response), 200
 
-# Note, when demoing, start with this, then change to the below
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=5000)
-
+# Run the program on port 5000
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        port = int(sys.argv[1])
-    else:
-        port = 5000
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
