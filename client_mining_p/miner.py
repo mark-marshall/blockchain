@@ -16,7 +16,9 @@ if __name__ == '__main__':
 
     coins_mined = 0
     # Run forever until interrupted
-    while True:
+    while True:  
+        req = requests.get(f"{node}/last-proof")
+        last_proof = req.json()['last_proof']
         # TODO: Get the last proof from the server and look for a new one
         # TODO: When found, POST it to the server {"proof": new_proof}
         # TODO: If the server responds with 'New Block Forged'
