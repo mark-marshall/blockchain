@@ -1,6 +1,7 @@
 import hashlib
 import requests
 from uuid import uuid4
+import time
 
 import sys
 import os
@@ -56,7 +57,10 @@ if __name__ == '__main__':
         # Get the last proof from the server
         r = requests.get(url=node + "/last_proof")
         data = r.json()
+   
+        start_time = time.time()
         new_proof = proof_of_work(data.get('proof'))
+        end_time = time.time()
 
         post_data = {"proof": new_proof, "id": id}
 
@@ -64,6 +68,6 @@ if __name__ == '__main__':
         data = r.json()
         if data.get('message') == 'New Block Forged':
             coins_mined += 1
-            print("Total coins mined: " + str(coins_mined))
+            print(f"Total coins mined: {str(coins_mined)} in {round((end_time - start_time), 2)}s")
         else:
             print(data.get('message'))
