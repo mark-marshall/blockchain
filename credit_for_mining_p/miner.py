@@ -7,14 +7,17 @@ import sys
 import os
 
 def handle_id():
-    id_file = open('my_id.txt', 'w+')
-    if os.stat("my_id.txt").st_size != 0:
-        id = id_file.read().split(",")
-    else:
+    """
+    Checks to see whether a my_id text file exists and creates one
+    with a new ID for the miner if it doesn't
+    """
+    try:
+        id_file = open('credit_for_mining_p/my_id.txt', 'r')
+        id_file.close()
+    except:
+        id_file = open('credit_for_mining_p/my_id.txt', 'w')
         id_file.write(str(uuid4()).replace('-', ''))
-        id = id_file.read().split(",")
-    id_file.close()
-    return id
+        id_file.close()
 
 def proof_of_work(last_proof):
     """
@@ -51,20 +54,26 @@ if __name__ == '__main__':
         node = "http://localhost:5000"
 
     coins_mined = 0
-    id = handle_id()
+    handle_id()
     # Run forever until interrupted
     while True:
         # Get the last proof from the server
         r = requests.get(url=node + "/last_proof")
         data = r.json()
-   
+        # record time of proof finding for client
         start_time = time.time()
         new_proof = proof_of_work(data.get('proof'))
         end_time = time.time()
-
-        post_data = {"proof": new_proof, "id": id}
-
+        # grab the id to send to the mine endpoint
+        sender_id_file = open('credit_for_mining_p/my_id.txt', 'r')
+        sender_id = sender_id_file.read()
+        # assemble data for the mine endpoint
+        post_data = {"proof": new_proof, "id": sender_id}
+        # make the request to /mine
         r = requests.post(url=node + "/mine", json=post_data)
+        # close the id file
+        sender_id_file.close()
+        # handle response from server for client
         data = r.json()
         if data.get('message') == 'New Block Forged':
             coins_mined += 1
